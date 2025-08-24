@@ -1,0 +1,3 @@
+spring:
+  elasticsearch:
+    uris: http://localhost:9200  # ES 호스트와 포트
