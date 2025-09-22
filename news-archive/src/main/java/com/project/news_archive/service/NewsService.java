@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.JsonData;
 import com.project.news_archive.domain.NewsDoc;
+import com.project.news_archive.domain.NewsSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 public class NewsService {
 
     private final ElasticsearchAsyncClient elasticsearchAsyncClient;
-    private static final String NEWS_INDEX = "news_index"; // 실제 Elasticsearch 인덱스 이름으로 변경하세요.
+    private static final String NEWS_INDEX = "news-*"; // 실제 Elasticsearch 인덱스 이름으로 변경하세요.
 
     /**
      * 전체 뉴스 문서를 동기적으로 조회합니다.
@@ -34,14 +35,14 @@ public class NewsService {
      * @return 뉴스 문서 리스트
      */
     public List<NewsDoc> getAllDocs() throws IOException {
-        SearchResponse<NewsDoc> response = elasticsearchAsyncClient.search(s -> s
+        SearchResponse<NewsSource> response = elasticsearchAsyncClient.search(s -> s
                         .index(NEWS_INDEX)
                         .query(q -> q.matchAll(m -> m)),
-                NewsDoc.class
+                NewsSource.class
         ).join(); // 비동기 작업이 완료될 때까지 기다립니다.
 
         return response.hits().hits().stream()
-                .map(Hit::source)
+                .map(hit -> hit.source().getDoc())
                 .collect(Collectors.toList());
     }
 
@@ -92,7 +93,7 @@ public class NewsService {
             mustQueries.add(
                     new Query.Builder().multiMatch(m -> m
                             .query(keyword)
-                            .fields("title", "content", "officeName") // 검색할 필드 지정
+                            .fields("doc.title", "doc.content", "doc.source") // 검색할 필드 지정
                     ).build()
             );
         }
@@ -139,11 +140,10 @@ public class NewsService {
 
         // 7. 비동기 검색 실행 및 결과 처리
         return elasticsearchAsyncClient
-                .search(requestBuilder.build(), NewsDoc.class)
+                .search(requestBuilder.build(), NewsSource.class)
                 .thenApply(searchResponse -> {
-                    List<Hit<NewsDoc>> hits = searchResponse.hits().hits();
-                    return hits.stream()
-                            .map(Hit::source)
+                    return searchResponse.hits().hits().stream()
+                            .map(hit -> hit.source().getDoc())
                             .collect(Collectors.toList());
                 });
     }

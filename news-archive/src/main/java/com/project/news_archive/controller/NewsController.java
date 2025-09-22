@@ -35,7 +35,7 @@ public class NewsController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
-            @RequestParam(defaultValue = "publishedDate") String sortField,
+            @RequestParam(defaultValue = "doc.published_at") String sortField,
             @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size

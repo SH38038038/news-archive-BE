@@ -1,0 +1,45 @@
+{
+"index_templates": [
+{
+"name": "news-template",
+"index_template": {
+"index_patterns": ["news-*"],
+"template": {
+"settings": {
+"index": {
+"number_of_shards": 1,
+"number_of_replicas": 0,
+"analysis": {
+"analyzer": {
+"ko_en_analyzer": {
+"type": "custom",
+"tokenizer": "nori_tokenizer",
+"filter": ["lowercase", "nori_part_of_speech", "english_stop"]
+}
+},
+"filter": {
+"english_stop": { "type": "stop", "stopwords": "_english_" }
+}
+}
+}
+},
+"mappings": {
+"properties": {
+"title": { "type": "text", "analyzer": "ko_en_analyzer" },
+"content": { "type": "text", "analyzer": "ko_en_analyzer" },
+"summary": { "type": "text", "analyzer": "ko_en_analyzer" },
+"url": { "type": "keyword" },
+"source": { "type": "keyword" },
+"source_type": { "type": "keyword" },
+"published_at": { "type": "date" },
+"tags": { "type": "keyword" },
+"author": { "type": "keyword" },
+"lang": { "type": "keyword" },
+"geo": { "type": "geo_point" }
+}
+}
+}
+}
+}
+]
+}
